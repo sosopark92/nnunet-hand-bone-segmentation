@@ -27,15 +27,17 @@ This folder contains my contribution to the hand bone auto-segmentation project:
 
 ```
 Sojung/
-├── original-segmentation.ipynb       # Baseline training & inference notebook
+├── baseline-segmentation.ipynb       # Baseline training & inference notebook
 ├── two-stage-segmentation.ipynb      # 2-stage pipeline implementation
-├── original-segmentation-analysis.md # Baseline results analysis (incl. thumb experiment)
+├── baseline-analysis.md              # Baseline results analysis (incl. thumb experiment)
 ├── two-stage-analysis.md             # 2-stage pipeline analysis
 ├── dataset.json                      # Dataset configuration
 └── src/
     ├── utility.py                    # Shared preprocessing & cropping utilities
     └── img/
         └── wholehand_inf.png         # Baseline inference visualisation
+        └── thumb_inf.png             # Baseline inference visualisation
+        └── roi_merged_inf.png        # 2-stage inference visualisation
 ```
 
 ---
