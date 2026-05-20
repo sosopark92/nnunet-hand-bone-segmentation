@@ -76,6 +76,8 @@ Standard nnU-Net `3d_fullres` trained on all 29 bone classes at once, using the 
 
 ### 2. Thumb-Focused Model
 
+<img src="./src/img/thumb_inf.png" width="60%">
+
 A dedicated 3-class model trained only on thumb-proximal bones (Scaphoid, Trapezium, Metacarpal 1), to test whether removing label competition improves thumb accuracy.
 
 | Setting | Value |
