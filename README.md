@@ -1,74 +1,157 @@
-# Dataset
-The dataset used in this study consists of hand and wrist CT scans obtained from the KU Leuven Research Data Repository. It contains high-resolution CT images and associated anatomical data of the hand and wrist region.  
+# Hand Bone Segmentation — Sojung's Research
 
-Available at: https://rdr.kuleuven.be/dataset.xhtml?persistentId=doi:10.48804/DWF4RG  
+This folder contains my contribution to the hand bone auto-segmentation project: designing, training, and analysing nnU-Net models for CT-based hand and wrist bone segmentation.
 
-# Methods
+---
 
-## Original Baseline
-<img src="./image/inference_img_origin.png" width="60%">  
-- Standarise the hand CT images, flipped them into consistant l or R. 
-- Fully segmented hand CT
-- Normal nnU-Net 3d_fullres
-- Trained/tested as a standard whole-volume multi-class segmentation experiment
+## 🛠️ Technologies Used
 
-Adding a 2-step strategy because the current result showed:
-- Small bones, especially around the metacarpal area, were segmented fairly well
-- Larger bones were not segmented as well
+<p align="left">
+  <img src="https://skillicons.dev/icons?i=python,pytorch" />
+</p>
 
+<p align="left">
+  <img src="https://img.shields.io/badge/nnU--Net-v2-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/3D%20Slicer-Medical%20Imaging-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/SimpleITK-Image%20Processing-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/NiBabel-NIfTI-yellow?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/NumPy-Scientific%20Computing-013243?style=for-the-badge&logo=numpy&logoColor=white" />
+  <img src="https://img.shields.io/badge/Pandas-Data%20Handling-150458?style=for-the-badge&logo=pandas&logoColor=white" />
+  <img src="https://img.shields.io/badge/Matplotlib-Visualisation-11557C?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/scikit--image-Image%20Processing-F7931E?style=for-the-badge" />
+</p>
 
-🟥 The model may already be good at local detail, but weaker at global anatomical context / extent.
+---
 
-## 2-Stage Experiment
+## 📂 Dataset
 
-**🟦 Target**  
-I need the thumb area to be segmented very accurately. but I also want better whole-hand segmentation.  
+**KU Leuven Hand & Wrist CT** — [doi:10.48804/DWF4RG](https://rdr.kuleuven.be/dataset.xhtml?persistentId=doi:10.48804/DWF4RG)
 
-**🟩 The 3 ROI groups**
-1. thumb (Trapezium + Scaphoid + Metacarpal1): thumb gets its own focused region
-2. middle phalanx 2–5 + distal phalanx 1-5 + proximal phalanx 1-5 + metacarpals: fingers/metacarpals are grouped into another region
-3. carpals + distal radius/ulna: wrist/carpal area gets its own region because it is complex
+| Property | Value |
+|----------|-------|
+| Modality | CT |
+| Region | Hand & wrist |
+| Cases | 6 (5 training, 1 test) |
+| Classes | 29 foreground bones + background |
+| Voxel spacing | ~0.245 × 0.222 × 0.245 mm |
+| Image size | ~461 × 976 × 461 voxels |
 
+Pre-processing included standardising orientation (consistent L/R flip) across all cases before training.
 
-**1️⃣ Stage 1: Coarse Segmentation**  
-1. Find the defined groups of ROIs    
-2. From the original multi-class mask, create a binary ROI mask for each group  
-- Thumb labels → one binary thumb ROI mask  
-- Digits/metacarpals labels → one binary ROI mask  
-- Carpals/wrist labels → one binary ROI mask  
-3. Use that ROI mask to:
-- compute a bounding box  
-📌 what is a bouding box?  
-    - A bounding box is the smallest box that contains the foreground mask.
-4. Add a margin  
-📌 Why do we add a margin around the bbox?
-    - the bone may touch the crop boundary
-    - some useful surrounding anatomy may be lost
-    - the model may not get enough context
-    - prediction may become unstable
-5. Crop the original CT
-- Crop the original multi-class mask
-- Save each group as a new nnU-Net dataset
+---
 
-*The ROI comes from the ground-truth label*  
-*The goal is to test whether ROI-specific cropping helps*  
+## 🔬 Experiments
 
+### 1. Baseline — Whole-Volume Segmentation
 
-**2️⃣ Stage 2: Fine Segmentation**  
-1. Use Stage 1 ROI crops as input. The cropped CT volumes from each ROI group are used as separate training inputs.
-2. Train ROI-specific nnU-Net models. Each ROI is trained independently:  
-    - Thumb ROI model
-    - Fingers/Metacarpals ROI model
-    - Wrist/Carpal ROI model
-3. Perform fine multi-class segmentation inside each ROI.  
-    - Instead of segmenting the whole hand at once, the model focuses only on the bones inside a smaller anatomical region. This allows the network to learn finer local details, especially for small or complex bones.  
-4. Improve thumb-region accuracy.
-    - The thumb ROI is treated as a priority region: Trapezium, Scaphoid, First metacarpal  
-5. Map ROI predictions back to the original CT space. 
-    - After prediction, each ROI segmentation is placed back into its original location using the saved bounding box coordinates.   
-6. Merge ROI predictions into a whole-hand segmentation. The three ROI outputs are combined to reconstruct the final full hand/wrist segmentation.   
-7. Compare with the original whole-volume baseline.  
-8. The ROI-based method will be evaluated against the original standard nnU-Net whole-volume model to check whether it improves:  
-- Thumb segmentation accuracy  
-- Small bone segmentation   
-- Overall whole-hand segmentation quality  
+<img src="./src/img/wholehand_inf.png" width="60%">
+
+Standard nnU-Net `3d_fullres` trained on all 29 bone classes at once, using the full CT volume as input.
+
+| Setting | Value |
+|---------|-------|
+| Model | nnUNetTrainer_250epochs, `3d_fullres` |
+| Architecture | PlainConvUNet, 6-stage encoder-decoder |
+| Patch size | 96 × 224 × 96 voxels |
+| Epochs | 250 |
+| Loss | Dice + Cross-Entropy (deep supervision) |
+| Optimizer | SGD (lr=0.01, momentum=0.99, Nesterov) |
+| GPU | NVIDIA GeForce RTX 4090 |
+
+**Key results:**
+
+| Bone group | Dice range | Result |
+|------------|-----------|--------|
+| Carpals (8 bones) | 0.958 – 0.986 | ✅ Excellent |
+| Thumb bones | 0.926 – 0.985 | ✅ Good to Excellent |
+| Metacarpals 2–5 | 0.725 – 0.834 | ⚠️ Mixed |
+| Proximal phalanges | 0.260 – 0.985 | ❌ Highly inconsistent |
+| Radius & Ulna | 0.000 – 0.081 | ❌ Critical failure |
+
+**Root causes identified:**
+- **Radius/Ulna failure:** Patch size (224 voxels) covers only ~23% of the bone's full longitudinal extent (~976 voxels), so the model never sees the full bone in one patch
+- **Finger confusion:** Parallel middle fingers (2/3/4) look identical in local patches — the model cannot tell which finger it is looking at without global positional context
+
+---
+
+### 2. Thumb-Focused Model
+
+A dedicated 3-class model trained only on thumb-proximal bones (Scaphoid, Trapezium, Metacarpal 1), to test whether removing label competition improves thumb accuracy.
+
+| Setting | Value |
+|---------|-------|
+| Dataset | Dataset100_THUMB |
+| Classes | 3 foreground + background |
+| Patch size | 112 × 224 × 96 voxels |
+| Epochs | 250 |
+
+**Comparison with baseline (test case THUMB_008 vs HAND_008):**
+
+| Bone | Baseline Dice | Thumb-Focused Dice | Δ |
+|------|---------------|--------------------|---|
+| Scaphoid | 0.986 | 0.968 | −0.018 |
+| Trapezium | 0.977 | 0.974 | −0.003 |
+| Metacarpal 1 | 0.926 | 0.950 | **+0.024 ↑** |
+
+Metacarpal 1 improved by reducing inter-class competition. Carpals showed minor degradation, likely because the full carpal neighbourhood context was lost.
+
+---
+
+### 3. 2-Stage ROI Pipeline
+
+A two-stage approach designed to give each anatomical subregion its own focused model.
+
+```
+Stage 1: Full CT → Whole-hand nnU-Net → Coarse 29-class mask
+             ↓
+     Compute bounding box per ROI group
+             ↓
+Stage 2: Cropped sub-volumes → 3 ROI-specific nnU-Nets → Fine masks
+             ↓
+     Merge ROI predictions → Final full-hand segmentation
+```
+
+**3 ROI groups:**
+
+| ROI | Bones |
+|-----|-------|
+| ThumbROI | Trapezium (7), Scaphoid (3), Metacarpal 1 (11) |
+| DigitsMetacarpalsROI | Metacarpals 2–5 (12–15), all phalanges (16–29) |
+| CarpalsWristROI | Radius (1), Ulna (2), Carpals (3–10) |
+
+**Problems found:**
+- Crops were too large (60–87% of full volume) because bones span the full z-axis
+- Overlapping label definitions caused redundant, unfocused crops
+- Training labels and merge labels were misaligned, wasting model capacity
+
+**Recommended fixes:**
+1. One label in exactly one ROI (no shared labels)
+2. Align training labels with merge-responsible labels
+3. Consider z-axis spatial splitting instead of anatomical grouping
+
+---
+
+## 📊 Results Summary
+
+| Experiment | Metacarpal 1 | Carpals | Notes |
+|------------|-------------|---------|-------|
+| Baseline (29-class) | 0.926 | 0.958–0.986 | Radius/ulna complete failure |
+| Thumb-focused (3-class) | **0.950** | 0.968–0.974 | +0.024 on MC1, minor carpal drop |
+| 2-Stage pipeline | — | — | Crops too large; ROI design needs revision |
+
+---
+
+## 📁 File Structure
+
+```
+Sojung/
+├── original-segmentation.ipynb       # Baseline training & inference notebook
+├── two-stage-segmentation.ipynb      # 2-stage pipeline implementation
+├── original-segmentation-analysis.md # Baseline results analysis (incl. thumb experiment)
+├── two-stage-analysis.md             # 2-stage pipeline analysis
+├── dataset.json                      # Dataset configuration
+└── src/
+    ├── utility.py                    # Shared preprocessing & cropping utilities
+    └── img/
+        └── wholehand_inf.png         # Baseline inference visualisation
+```
