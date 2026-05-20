@@ -133,3 +133,48 @@ The 2-stage pipeline was designed to improve segmentation by focusing on anatomi
 - **DigitsMetacarpalsROI (labels 12–29):** This is where the most room for improvement exists — metacarpals 3/4 and the parallel proximal/middle phalanges are consistently weak.
 
 The baseline makes clear that the main problem is not small bones (carpals are fine) but **long bones** (radius, ulna) and **positionally ambiguous parallel structures** (middle fingers). The 2-stage design should be evaluated against these specific failure modes.
+
+---
+
+## Thumb-Focused Experiment (Dataset100_THUMB, 250 epochs)
+
+A separate model was trained on a reduced label set containing only the three thumb-proximal bones: Scaphoid, Trapezium, and Metacarpal 1. The rationale was to test whether removing label competition from the 29-class problem would improve thumb-region accuracy.
+
+### Experiment Setup
+
+| Item | Value |
+|------|-------|
+| Dataset | Dataset100_THUMB |
+| Training cases | 5 (THUMB_001, 002, 004, 005, 007) |
+| Test case | THUMB_008 |
+| Classes | 3 foreground + background (4 total) |
+| Patch size | 112 × 224 × 96 voxels |
+| Epochs | 250 |
+| Architecture | PlainConvUNet, 6-stage, `3d_fullres` |
+
+### Per-Label Results (THUMB_008)
+
+| Thumb Label | Bone | Dice | IoU | FN | FP |
+|-------------|------|------|-----|-----|-----|
+| 1 | Scaphoid | 0.968 | 0.938 | 7,070 | 3,683 |
+| 2 | Trapezium | 0.974 | 0.948 | 1,513 | 6,389 |
+| 3 | Metacarpal 1 | 0.950 | 0.904 | 23,687 | 9,592 |
+
+### Comparison with Baseline (HAND_008)
+
+| Bone | Baseline Dice | Thumb-Focused Dice | Δ Dice |
+|------|---------------|--------------------|--------|
+| Scaphoid | 0.986 | 0.968 | **−0.018** |
+| Trapezium | 0.977 | 0.974 | −0.003 |
+| Metacarpal 1 | 0.926 | 0.950 | **+0.024** ↑ |
+
+### Key Observations
+
+- **Metacarpal 1 improved by +0.024 Dice.** Removing the 26 other competing labels allowed the model to better learn the full extent of the thumb metacarpal, which was under-segmented in the baseline (44K FN).
+- **Scaphoid slightly degraded (−0.018).** The scaphoid was already near-perfect in the baseline (0.986). The small drop likely reflects reduced carpal context — in the full model, the eight carpals reinforce each other spatially.
+- **Trapezium essentially unchanged (−0.003).** Being immediately adjacent to Metacarpal 1, the trapezium benefits somewhat from the improved metacarpal learning without significant loss.
+- **Proximal phalanx 1 and Distal phalanx 1 were not included** in this experiment's label set, so their thumb-focused performance remains unknown.
+
+### Interpretation
+
+The thumb-focused experiment confirms that label competition in the 29-class model slightly suppresses Metacarpal 1 accuracy. The gain (+0.024) is modest, and the baseline was already good (0.926), suggesting the thumb is not where the most improvement headroom lies. The real problem areas — Metacarpals 3/4, proximal phalanges 2/3, and the forearm bones — remain unaddressed by thumb specialisation.
