@@ -1,0 +1,27 @@
+# Datasets
+datasets/
+
+# CT images (too large for GitHub)
+CT_image/
+
+# 3D Slicer
+3D Slicer/
+
+# nnUNet
+nnUNet/
+
+# Notebook to add later
+crop-roi-hand.ipynb
+
+# Python cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Model weights
+*.pt
+*.pth
+*.pkl
+
+#.claude
+.claude/

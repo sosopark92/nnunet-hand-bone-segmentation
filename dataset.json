@@ -1,0 +1,41 @@
+{   
+    "channel_names": {
+        "0": "CT" 
+    }, 
+    "labels": {
+        "background": 0,
+        "radius": 1,
+        "ulna": 2,
+        "scaphoid": 3,
+        "lunate": 4,
+        "triquetrum": 5,
+        "pisiform": 6,
+        "trapezium": 7,
+        "trapezoid": 8,
+        "capitate": 9,
+        "hamate": 10,
+        "metacarpal_1": 11,
+        "metacarpal_2": 12,
+        "metacarpal_3": 13,
+        "metacarpal_4": 14,
+        "metacarpal_5": 15,
+        "proximal_phalanx_1": 16,
+        "proximal_phalanx_2": 17,
+        "proximal_phalanx_3": 18,
+        "proximal_phalanx_4": 19,
+        "proximal_phalanx_5": 20,
+        "middle_phalanx_2": 21,
+        "middle_phalanx_3": 22,
+        "middle_phalanx_4": 23,
+        "middle_phalanx_5": 24,
+        "distal_phalanx_1": 25,
+        "distal_phalanx_2": 26,
+        "distal_phalanx_3": 27,
+        "distal_phalanx_4": 28,
+        "distal_phalanx_5": 29
+    }, 
+    "numTraining": 5, 
+    "file_ending": ".nii",
+    "overwrite_image_reader_writer": "SimpleITKIO"
+}
+s
