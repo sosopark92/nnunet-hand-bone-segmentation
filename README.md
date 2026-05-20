@@ -23,6 +23,23 @@ This folder contains my contribution to the hand bone auto-segmentation project:
 
 ---
 
+## 📁 File Structure
+
+```
+Sojung/
+├── original-segmentation.ipynb       # Baseline training & inference notebook
+├── two-stage-segmentation.ipynb      # 2-stage pipeline implementation
+├── original-segmentation-analysis.md # Baseline results analysis (incl. thumb experiment)
+├── two-stage-analysis.md             # 2-stage pipeline analysis
+├── dataset.json                      # Dataset configuration
+└── src/
+    ├── utility.py                    # Shared preprocessing & cropping utilities
+    └── img/
+        └── wholehand_inf.png         # Baseline inference visualisation
+```
+
+---
+
 ## 📂 Dataset
 
 **KU Leuven Hand & Wrist CT** — [doi:10.48804/DWF4RG](https://rdr.kuleuven.be/dataset.xhtml?persistentId=doi:10.48804/DWF4RG)
@@ -76,7 +93,7 @@ Standard nnU-Net `3d_fullres` trained on all 29 bone classes at once, using the 
 
 ### 2. Thumb-Focused Model
 
-<img src="./src/img/thumb_inf.png" width="60%">
+<img src="./src/img/thumb_inf.png" width="40%">
 
 A dedicated 3-class model trained only on thumb-proximal bones (Scaphoid, Trapezium, Metacarpal 1), to test whether removing label competition improves thumb accuracy.
 
@@ -143,17 +160,3 @@ Stage 2: Cropped sub-volumes → 3 ROI-specific nnU-Nets → Fine masks
 
 ---
 
-## 📁 File Structure
-
-```
-Sojung/
-├── original-segmentation.ipynb       # Baseline training & inference notebook
-├── two-stage-segmentation.ipynb      # 2-stage pipeline implementation
-├── original-segmentation-analysis.md # Baseline results analysis (incl. thumb experiment)
-├── two-stage-analysis.md             # 2-stage pipeline analysis
-├── dataset.json                      # Dataset configuration
-└── src/
-    ├── utility.py                    # Shared preprocessing & cropping utilities
-    └── img/
-        └── wholehand_inf.png         # Baseline inference visualisation
-```
