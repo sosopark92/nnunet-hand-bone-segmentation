@@ -1,6 +1,6 @@
 # Hand Bone Segmentation — Sojung's Research
 
-This folder contains my contribution to the hand bone auto-segmentation project: designing, training, and analysing nnU-Net models for CT-based hand and wrist bone segmentation.
+This repository contains my contribution to the hand bone auto-segmentation project: designing, training, and analysing nnU-Net models for CT-based hand and wrist bone segmentation.
 
 ---
 
