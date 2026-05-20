@@ -118,6 +118,8 @@ Metacarpal 1 improved by reducing inter-class competition. Carpals showed minor 
 
 ### 3. 2-Stage ROI Pipeline
 
+<img src="./src/img/roi_merged_inf.png" width="60%">
+
 A two-stage approach designed to give each anatomical subregion its own focused model.
 
 ```
